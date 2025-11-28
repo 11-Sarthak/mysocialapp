@@ -1,0 +1,29 @@
+# text_posts={1:{"title":"newpost","content":"cooltestpost"},
+#             2:{"title":"2ndpost","content":"awareness"}}
+
+# @app.get("/posts")
+# def get_all_posts(limit:int):  
+#     if limit :  
+#         return list(text_posts.values())[:limit]
+#     return text_posts
+
+
+# @app.get("/posts/{id}")
+# def get_individual_post(id:int):    
+#     if id not in text_posts:    
+#         raise HTTPException(status_code=404, detail="post not foud")
+#     return text_posts.get(id)
+
+# @app.post("/posts")
+# def create_post(post: postcreate):  
+#     new_post={"title":post.title,"content":post.content}
+#     text_posts[max(text_posts.keys())+1] = new_post
+#     return new_post
+
+# @app.delete("/posts/{id}")
+# def delete_post(id: int):
+#     if id not in text_posts:
+#         raise HTTPException(status_code=404, detail="post not found")
+    
+#     deleted_post = text_posts.pop(id)   # removes and returns the post
+#     return {"message": "post deleted", "deleted_post": deleted_post}
