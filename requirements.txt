@@ -1,0 +1,7 @@
+aiosqlite>=0.21.0
+fastapi>=0.121.2
+fastapi-users[sqlalchemy]>=15.0.1
+python-dotenv>=1.2.1
+streamlit>=1.51.0
+uvicorn[standard]>=0.38.0
+imagekitio>=4.2.0

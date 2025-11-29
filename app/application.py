@@ -15,6 +15,7 @@ import tempfile
 import os
 from dotenv import load_dotenv
 from app.users import auth_backend, current_active_user, fastapi_users
+from fastapi.middleware.cors import CORSMiddleware
 
 load_dotenv()
 
@@ -27,8 +28,14 @@ async def lifespan(app: FastAPI):
 # ----------------- Initialize FastAPI -----------------
 app = FastAPI(lifespan=lifespan)
 
-
-
+# ----------------- CORS CONFIG -----------------
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],          # allow all origins (Streamlit, localhost, Render)
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # ----------------- Auth Routes -----------------
 app.include_router(fastapi_users.get_auth_router(auth_backend), prefix='/auth/jwt', tags=["auth"])

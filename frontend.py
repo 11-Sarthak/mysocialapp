@@ -6,7 +6,8 @@ import urllib.parse
 st.set_page_config(page_title="Simple Social", layout="wide")
 
 # ----------------- Configuration -----------------
-BASE_URL = "http://127.0.0.1:8000"  # Change to backend IP if not local
+BASE_URL = "http://127.0.0.1:8000"  
+
 
 # ----------------- Session State -----------------
 if 'token' not in st.session_state:
