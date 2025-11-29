@@ -5,3 +5,4 @@ python-dotenv>=1.2.1
 streamlit>=1.51.0
 uvicorn[standard]>=0.38.0
 imagekitio>=4.2.0
+pydantic>=2.0
