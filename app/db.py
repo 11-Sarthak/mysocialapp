@@ -1,3 +1,5 @@
+import os
+from dotenv import load_dotenv, find_dotenv
 from collections.abc import AsyncGenerator
 import uuid
 from datetime import datetime
@@ -6,9 +8,14 @@ from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sess
 from sqlalchemy.orm import DeclarativeBase, relationship
 from fastapi_users.db import SQLAlchemyBaseUserTableUUID, SQLAlchemyUserDatabase
 from fastapi import Depends
+from sqlalchemy.dialects.postgresql import UUID
+
 
 # SQLite async URL
-DATABASE_URL = "sqlite+aiosqlite:///./test.db"
+load_dotenv(find_dotenv())
+print("DEBUG DATABASE_URL =", os.getenv("DATABASE_URL"))  # <-- add this
+
+DATABASE_URL = os.getenv("DATABASE_URL")
 
 # Base class for models
 class Base(DeclarativeBase):
@@ -22,7 +29,7 @@ class User(SQLAlchemyBaseUserTableUUID, Base):
 class Post(Base):
     __tablename__ = "posts"
     id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
-    user_id = Column(String, ForeignKey("user.id"), nullable=False)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("user.id"), nullable=False)
     caption = Column(Text)
     url = Column(String, nullable=False)
     file_type = Column(String, nullable=False)

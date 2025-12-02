@@ -1,3 +1,6 @@
+from dotenv import load_dotenv
+load_dotenv()
+
 from fastapi import FastAPI, HTTPException, UploadFile, File, Form, Depends, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -26,7 +29,13 @@ async def lifespan(app: FastAPI):
     yield
 
 # ----------------- Initialize FastAPI -----------------
-app = FastAPI(lifespan=lifespan)
+app = FastAPI(lifespan=lifespan,
+               title="My App",
+    docs_url="/docs",
+    redoc_url="/redoc"
+)
+
+
 
 # ----------------- CORS CONFIG -----------------
 app.add_middleware(
@@ -43,6 +52,11 @@ app.include_router(fastapi_users.get_register_router(UserRead, UserCreate), pref
 app.include_router(fastapi_users.get_reset_password_router(), prefix="/auth", tags=["auth"])
 app.include_router(fastapi_users.get_verify_router(UserRead), prefix="/auth", tags=["auth"])
 app.include_router(fastapi_users.get_users_router(UserRead, UserUpdate), prefix="/users", tags=["users"])
+
+
+@app.get("/")
+def home():
+    return {"message": "FastAPI is running!"}
 
 # ----------------- Upload Endpoint -----------------
 @app.post("/upload")
