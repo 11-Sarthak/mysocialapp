@@ -8,7 +8,7 @@ st.set_page_config(page_title="Simple Social", layout="wide")
 
 # ----------------- Configuration -----------------
 # Use BACKEND_URL environment variable if set, otherwise default to local
-BASE_URL = "https://mysocialapp-eh6p.onrender.com"
+BASE_URL = os.getenv("BACKEND_URL", "https://mysocialapp-eh6p.onrender.com")
 
 # ----------------- Session State -----------------
 if 'token' not in st.session_state:
