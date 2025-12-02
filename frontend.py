@@ -46,7 +46,7 @@ def create_transformed_url(original_url, transformation_params="", caption=None)
 
 # ----------------- Pages -----------------
 def login_page():
-    st.title("🚀 Welcome to ")
+    st.title("🚀 Welcome to Mediatube")
     email = st.text_input("Email:")
     password = st.text_input("Password:", type="password")
 
