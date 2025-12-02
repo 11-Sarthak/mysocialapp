@@ -2,14 +2,13 @@ import streamlit as st
 import requests
 import base64
 import urllib.parse
-import os
+import os  # For environment variables
 
 st.set_page_config(page_title="Simple Social", layout="wide")
 
 # ----------------- Configuration -----------------
+# Use BACKEND_URL environment variable if set, otherwise default to local
 BASE_URL = os.getenv("BACKEND_URL", "http://127.0.0.1:8001")
- 
-
 
 # ----------------- Session State -----------------
 if 'token' not in st.session_state:
@@ -47,7 +46,7 @@ def create_transformed_url(original_url, transformation_params="", caption=None)
 
 # ----------------- Pages -----------------
 def login_page():
-    st.title("🚀 Welcome to Simple Social")
+    st.title("🚀 Welcome to ")
     email = st.text_input("Email:")
     password = st.text_input("Password:", type="password")
 
@@ -67,7 +66,7 @@ def login_page():
                         if user_response.status_code == 200:
                             st.session_state.user = user_response.json()
                             st.session_state.refresh_feed = True
-                            st.stop()  # Refresh the app immediately
+                            st.stop()
                         else:
                             st.error("Failed to get user info")
                     else:
@@ -109,7 +108,7 @@ def upload_page():
                 if response.status_code == 200:
                     st.success("Posted!")
                     st.session_state.refresh_feed = True
-                    st.stop()  # Refresh feed immediately
+                    st.stop()
                 else:
                     st.error("Upload failed!")
             except requests.ConnectionError:
@@ -169,7 +168,7 @@ else:
         st.session_state.user = None
         st.session_state.token = None
         st.session_state.refresh_feed = True
-        st.stop()  # Refresh after logout
+        st.stop()
 
     st.sidebar.markdown("---")
     page = st.sidebar.radio("Navigate:", ["🏠 Feed", "📸 Upload"])
@@ -177,4 +176,3 @@ else:
         feed_page()
     else:
         upload_page()
-
