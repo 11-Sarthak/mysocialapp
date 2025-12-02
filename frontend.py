@@ -6,7 +6,7 @@ import urllib.parse
 st.set_page_config(page_title="Simple Social", layout="wide")
 
 # ----------------- Configuration -----------------
-BASE_URL = "https://mysocialapp-eh6p.onrender.com"
+BASE_URL = os.getenv("BACKEND_URL", "http://127.0.0.1:8001")
  
 
 
