@@ -2,6 +2,7 @@ import streamlit as st
 import requests
 import base64
 import urllib.parse
+import os
 
 st.set_page_config(page_title="Simple Social", layout="wide")
 
