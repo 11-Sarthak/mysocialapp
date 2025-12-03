@@ -13,7 +13,7 @@ from sqlalchemy.dialects.postgresql import UUID
 
 
 
- # <-- add this
+ 
 load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), ".env"))
 DATABASE_URL = os.getenv("DATABASE_URL")
 print("DEBUG DATABASE_URL =", DATABASE_URL) 
@@ -40,7 +40,7 @@ class Post(Base):
 
 # Async engine and session maker
 engine = create_async_engine(DATABASE_URL,
-                            connect_args={"ssl": {"sslmode": "require"}},)
+                            )
 async_session_maker = async_sessionmaker(engine, expire_on_commit=False)
 
 # Create all tables

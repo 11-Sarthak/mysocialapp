@@ -58,19 +58,6 @@ app.include_router(fastapi_users.get_users_router(UserRead, UserUpdate), prefix=
 def home():
     return {"message": "FastAPI is running!"}
 
-import socket
-
-@app.get("/db-test")
-async def db_test():
-    try:
-        s = socket.create_connection(
-            ("db.yhfjmkugtijrcmphhtbg.supabase.co", 5432), timeout=5
-        )
-        s.close()
-        return {"status": "reachable"}
-    except Exception as e:
-        return {"status": "unreachable", "error": str(e)}
-
 # ----------------- Upload Endpoint -----------------
 @app.post("/upload")
 async def upload_file(
