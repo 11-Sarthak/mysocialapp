@@ -7,7 +7,8 @@ import os
 st.set_page_config(page_title="Simple Social", layout="wide")
 
 # ----------------- Configuration -----------------
-BASE_URL = os.getenv("BACKEND_URL", "http://127.0.0.1:8000")  # local fallback
+BASE_URL = os.getenv("BACKEND_URL", "https://fastapimediaapplication.onrender.com")
+  # local fallback
 
 # ----------------- Session State -----------------
 if 'token' not in st.session_state:
