@@ -2,12 +2,11 @@ import streamlit as st
 import requests
 import base64
 import urllib.parse
-import os  # For environment variables
+import os
 
 st.set_page_config(page_title="Simple Social", layout="wide")
 
 # ----------------- Configuration -----------------
-# Use BACKEND_URL environment variable if set, otherwise default to local
 BASE_URL = os.getenv("BACKEND_URL", "http://127.0.0.1:8000")  # local fallback
 
 # ----------------- Session State -----------------
@@ -16,7 +15,7 @@ if 'token' not in st.session_state:
 if 'user' not in st.session_state:
     st.session_state.user = None
 if 'refresh_feed' not in st.session_state:
-    st.session_state.refresh_feed = True  # Initially load feed
+    st.session_state.refresh_feed = True
 
 # ----------------- Utility Functions -----------------
 def get_headers():
@@ -62,13 +61,13 @@ def login_page():
                         token_data = response.json()
                         st.session_state.token = token_data["access_token"]
 
-                        user_response = requests.get(f"{BASE_URL}/users/me", headers=get_headers())
-                        if user_response.status_code == 200:
-                            st.session_state.user = user_response.json()
+                        user_resp = requests.get(f"{BASE_URL}/users/me", headers=get_headers())
+                        if user_resp.status_code == 200:
+                            st.session_state.user = user_resp.json()
                             st.session_state.refresh_feed = True
                             st.stop()
                         else:
-                            st.error("Failed to get user info")
+                            st.error("Failed to fetch user info")
                     else:
                         st.error("Invalid email or password!")
                 except requests.ConnectionError:
@@ -78,12 +77,12 @@ def login_page():
             if st.button("Sign Up", type="secondary", use_container_width=True):
                 signup_data = {"email": email, "password": password}
                 try:
-                    response = requests.post(f"{BASE_URL}/auth/register", json=signup_data)
-                    if response.status_code == 201:
+                    resp = requests.post(f"{BASE_URL}/auth/register", json=signup_data)
+                    if resp.status_code == 201:
                         st.success("Account created! You can now login.")
                         st.stop()
                     else:
-                        error_detail = response.json().get("detail", "Registration failed")
+                        error_detail = resp.json().get("detail", "Registration failed")
                         st.error(f"Registration failed: {error_detail}")
                 except requests.ConnectionError:
                     st.error(f"Cannot connect to backend at {BASE_URL}")
@@ -92,10 +91,7 @@ def login_page():
 
 def upload_page():
     st.title("📸 Share Something")
-    uploaded_file = st.file_uploader(
-        "Choose media",
-        type=['png', 'jpg', 'jpeg', 'mp4', 'avi', 'mov', 'mkv', 'webm']
-    )
+    uploaded_file = st.file_uploader("Choose media", type=['png', 'jpg', 'jpeg', 'mp4', 'avi', 'mov', 'mkv', 'webm'])
     caption = st.text_area("Caption:", placeholder="What's on your mind?")
 
     if uploaded_file and st.button("Share", type="primary"):
@@ -103,9 +99,9 @@ def upload_page():
             try:
                 files = {"file": (uploaded_file.name, uploaded_file.getvalue(), uploaded_file.type)}
                 data = {"caption": caption}
-                response = requests.post(f"{BASE_URL}/upload", files=files, data=data, headers=get_headers())
+                resp = requests.post(f"{BASE_URL}/upload", files=files, data=data, headers=get_headers())
 
-                if response.status_code == 200:
+                if resp.status_code == 200:
                     st.success("Posted!")
                     st.session_state.refresh_feed = True
                     st.stop()
@@ -116,11 +112,10 @@ def upload_page():
 
 def feed_page():
     st.title("🏠 Feed")
-
     try:
-        response = requests.get(f"{BASE_URL}/feed", headers=get_headers())
-        if response.status_code == 200:
-            posts = response.json()["posts"]
+        resp = requests.get(f"{BASE_URL}/feed", headers=get_headers())
+        if resp.status_code == 200:
+            posts = resp.json()["posts"]
         else:
             st.error("Failed to load feed")
             return
@@ -129,12 +124,12 @@ def feed_page():
         return
 
     if not posts:
-        st.info("No posts yet! Be the first to share something.")
+        st.info("No posts yet!")
         return
 
     for post in posts:
         st.markdown("---")
-        col1, col2 = st.columns([4, 1])
+        col1, col2 = st.columns([4,1])
         with col1:
             st.markdown(f"**{post['email']}** • {post['created_at'][:10]}")
         with col2:

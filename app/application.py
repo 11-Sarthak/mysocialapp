@@ -2,7 +2,6 @@ import os
 import shutil
 import tempfile
 from contextlib import asynccontextmanager
-
 from fastapi import FastAPI, HTTPException, UploadFile, File, Form, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -10,8 +9,9 @@ from fastapi.templating import Jinja2Templates
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from dotenv import load_dotenv
+import uuid
 
-from app.db import Post, get_async_session, User
+from app.db import Post, get_async_session, User, create_db_and_tables
 from app.images import imagekit
 from imagekitio.models.UploadFileRequestOptions import UploadFileRequestOptions
 from app.users import auth_backend, current_active_user, fastapi_users
@@ -19,9 +19,11 @@ from app.schemas import UserRead, UserCreate, UserUpdate
 
 load_dotenv()
 
-# ----------------- Async lifespan (no DB creation on startup) -----------------
+# ----------------- Async lifespan -----------------
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    # Create tables on startup
+    await create_db_and_tables()
     yield
 
 # ----------------- FastAPI app -----------------
@@ -128,7 +130,8 @@ async def get_feed(user: User = Depends(current_active_user), session: AsyncSess
 async def delete_post(post_id: str, user: User = Depends(current_active_user),
                       session: AsyncSession = Depends(get_async_session)):
     try:
-        result = await session.execute(select(Post).where(Post.id == post_id))
+        post_uuid = uuid.UUID(post_id)
+        result = await session.execute(select(Post).where(Post.id == str(post_uuid)))
         post = result.scalars().first()
 
         if not post:

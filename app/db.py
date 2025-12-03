@@ -1,5 +1,3 @@
-import os
-import ssl
 from collections.abc import AsyncGenerator
 import uuid
 from datetime import datetime
@@ -8,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sess
 from sqlalchemy.orm import DeclarativeBase, relationship
 from fastapi_users.db import SQLAlchemyBaseUserTableUUID, SQLAlchemyUserDatabase
 from fastapi import Depends
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.dialects.sqlite import TEXT
 
 # ----------------- Base -----------------
 class Base(DeclarativeBase):
@@ -22,7 +20,7 @@ class Post(Base):
     __tablename__ = "posts"
 
     id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
-    user_id = Column(UUID(as_uuid=True), ForeignKey("user.id"), nullable=False)
+    user_id = Column(String, ForeignKey("user.id"), nullable=False)
     caption = Column(Text)
     url = Column(String, nullable=False)
     file_type = Column(String, nullable=False)
@@ -31,25 +29,15 @@ class Post(Base):
 
     user = relationship("User", back_populates="posts")
 
-# ----------------- Database URL -----------------
-DATABASE_URL = DATABASE_URL = "postgresql+asyncpg://postgres:XnqUQzWQU4r6j0h4@db.yhfjmkugtijrcmphhtbg.supabase.co:5432/postgres"
- # use env variable
+# ----------------- SQLite Database -----------------
+DATABASE_URL = "sqlite+aiosqlite:///./app.db"  # Database file in your project folder
 
-# SSL for Supabase
-ssl_context = ssl.create_default_context()
-ssl_context.check_hostname = False
-ssl_context.verify_mode = ssl.CERT_NONE
-
-engine = create_async_engine(
-    DATABASE_URL,
-    connect_args={"ssl": ssl_context} if DATABASE_URL else {}
-)
-
+engine = create_async_engine(DATABASE_URL, echo=True)
 async_session_maker = async_sessionmaker(engine, expire_on_commit=False)
 
 # ----------------- DB Helpers -----------------
 async def create_db_and_tables():
-    """Run manually once to create tables."""
+    """Run manually once or on app startup to create tables."""
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
 
