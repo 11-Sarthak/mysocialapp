@@ -37,7 +37,10 @@ app = FastAPI(
 # ----------------- CORS -----------------
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Streamlit, localhost, Render
+    allow_origins=[
+        "http://localhost:8501",  # Local Streamlit during development
+        "https://socialmediaapplicationinfastapibysarthak.streamlit.app",  # Hosted Streamlit frontend
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
