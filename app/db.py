@@ -1,5 +1,5 @@
 import os
-from dotenv import load_dotenv, find_dotenv
+import ssl
 from collections.abc import AsyncGenerator
 import uuid
 from datetime import datetime
@@ -10,17 +10,19 @@ from fastapi_users.db import SQLAlchemyBaseUserTableUUID, SQLAlchemyUserDatabase
 from fastapi import Depends
 from sqlalchemy.dialects.postgresql import UUID
 
-# Base class for models
+
+# Base class
 class Base(DeclarativeBase):
     pass
 
-# User model
+
 class User(SQLAlchemyBaseUserTableUUID, Base):
     posts = relationship("Post", back_populates="user")
 
-# Post model
+
 class Post(Base):
     __tablename__ = "posts"
+
     id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     user_id = Column(UUID(as_uuid=True), ForeignKey("user.id"), nullable=False)
     caption = Column(Text)
@@ -28,34 +30,36 @@ class Post(Base):
     file_type = Column(String, nullable=False)
     file_name = Column(String, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
+
     user = relationship("User", back_populates="posts")
 
-# Load your DATABASE_URL from environment if possible
-DATABASE_URL = os.getenv(
-    "DATABASE_URL",
-    "postgresql+asyncpg://postgres:XnqUQzWQU4r6j0h4@db.yhfjmkugtijrcmphhtbg.supabase.co:5432/postgres"
-)
 
-# Create engine with proper SSL for Supabase
+DATABASE_URL = "postgresql+asyncpg://postgres:XnqUQzWQU4r6j0h4@db.yhfjmkugtijrcmphhtbg.supabase.co:5432/postgres"
+
+
+# 👉 Correct SSL context for Supabase
+ssl_context = ssl.create_default_context()
+ssl_context.check_hostname = False
+ssl_context.verify_mode = ssl.CERT_NONE
+
+
 engine = create_async_engine(
     DATABASE_URL,
-    connect_args={
-        "ssl": {"sslmode": "require"}  # <-- required for Supabase
-    },
+    connect_args={"ssl": ssl_context}
 )
 
 async_session_maker = async_sessionmaker(engine, expire_on_commit=False)
 
-# Create all tables
+
 async def create_db_and_tables():
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
 
-# Async session generator
+
 async def get_async_session() -> AsyncGenerator[AsyncSession, None]:
     async with async_session_maker() as session:
         yield session
 
-# User database dependency
+
 async def get_user_db(session: AsyncSession = Depends(get_async_session)):
     yield SQLAlchemyUserDatabase(session, User)
