@@ -11,11 +11,12 @@ from fastapi import Depends
 from sqlalchemy.dialects.postgresql import UUID
 
 
-# SQLite async URL
-load_dotenv(find_dotenv())
-print("DEBUG DATABASE_URL =", os.getenv("DATABASE_URL"))  # <-- add this
 
+
+ # <-- add this
+load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), ".env"))
 DATABASE_URL = os.getenv("DATABASE_URL")
+print("DEBUG DATABASE_URL =", DATABASE_URL) 
 
 # Base class for models
 class Base(DeclarativeBase):
