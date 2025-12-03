@@ -55,6 +55,7 @@ app.include_router(fastapi_users.get_users_router(UserRead, UserUpdate), prefix=
 
 
 @app.get("/")
+@app.head("/")
 def home():
     return {"message": "FastAPI is running!"}
 
