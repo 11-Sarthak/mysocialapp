@@ -39,7 +39,8 @@ class Post(Base):
     user = relationship("User", back_populates="posts")
 
 # Async engine and session maker
-engine = create_async_engine(DATABASE_URL)
+engine = create_async_engine(DATABASE_URL,
+                            connect_args={"ssl": {"sslmode": "require"}},)
 async_session_maker = async_sessionmaker(engine, expire_on_commit=False)
 
 # Create all tables
