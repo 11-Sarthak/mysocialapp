@@ -1,65 +1,60 @@
-from dotenv import load_dotenv
-load_dotenv()
+import os
+import shutil
+import tempfile
+from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, HTTPException, UploadFile, File, Form, Depends, Request
+from fastapi import FastAPI, HTTPException, UploadFile, File, Form, Depends
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-
-from app.schemas import postcreate, UserRead, UserCreate, UserUpdate
-from app.db import Post, create_db_and_tables, get_async_session, User
-from sqlalchemy.ext.asyncio import AsyncSession
-from contextlib import asynccontextmanager
 from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+from dotenv import load_dotenv
+
+from app.db import Post, get_async_session, User
 from app.images import imagekit
 from imagekitio.models.UploadFileRequestOptions import UploadFileRequestOptions
-import shutil
-import uuid
-import tempfile
-import os
-from dotenv import load_dotenv
 from app.users import auth_backend, current_active_user, fastapi_users
-from fastapi.middleware.cors import CORSMiddleware
+from app.schemas import UserRead, UserCreate, UserUpdate
 
 load_dotenv()
 
-# ----------------- Async Lifespan -----------------
+# ----------------- Async lifespan (no DB creation on startup) -----------------
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    await create_db_and_tables()
     yield
 
-# ----------------- Initialize FastAPI -----------------
-app = FastAPI(lifespan=lifespan,
-               title="My App",
+# ----------------- FastAPI app -----------------
+app = FastAPI(
+    lifespan=lifespan,
+    title="My App",
     docs_url="/docs",
     redoc_url="/redoc"
 )
 
-
-
-# ----------------- CORS CONFIG -----------------
+# ----------------- CORS -----------------
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],          # allow all origins (Streamlit, localhost, Render)
+    allow_origins=["*"],  # Streamlit, localhost, Render
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# ----------------- Auth Routes -----------------
+# ----------------- Auth routes -----------------
 app.include_router(fastapi_users.get_auth_router(auth_backend), prefix='/auth/jwt', tags=["auth"])
 app.include_router(fastapi_users.get_register_router(UserRead, UserCreate), prefix="/auth", tags=["auth"])
 app.include_router(fastapi_users.get_reset_password_router(), prefix="/auth", tags=["auth"])
 app.include_router(fastapi_users.get_verify_router(UserRead), prefix="/auth", tags=["auth"])
 app.include_router(fastapi_users.get_users_router(UserRead, UserUpdate), prefix="/users", tags=["users"])
 
-
+# ----------------- Home -----------------
 @app.get("/")
 @app.head("/")
 def home():
     return {"message": "FastAPI is running!"}
 
-# ----------------- Upload Endpoint -----------------
+# ----------------- Upload -----------------
 @app.post("/upload")
 async def upload_file(
     file: UploadFile = File(...),
@@ -102,10 +97,9 @@ async def upload_file(
             os.unlink(temp_file_path)
         file.file.close()
 
-# ----------------- Feed Endpoint -----------------
+# ----------------- Feed -----------------
 @app.get("/feed")
 async def get_feed(user: User = Depends(current_active_user), session: AsyncSession = Depends(get_async_session)):
-    
     result = await session.execute(select(Post).order_by(Post.created_at.desc()))
     posts = [row[0] for row in result.all()]
 
@@ -129,7 +123,7 @@ async def get_feed(user: User = Depends(current_active_user), session: AsyncSess
 
     return {"posts": posts_data}
 
-# ----------------- Delete Endpoint -----------------
+# ----------------- Delete -----------------
 @app.delete("/posts/{post_id}")
 async def delete_post(post_id: str, user: User = Depends(current_active_user),
                       session: AsyncSession = Depends(get_async_session)):
@@ -151,9 +145,7 @@ async def delete_post(post_id: str, user: User = Depends(current_active_user),
 
         await session.delete(post)
         await session.commit()
-
-        # Expire session objects to ensure next query fetches fresh data
-        session.expire_all()  # <-- removed await
+        session.expire_all()
 
         return {"success": True, "message": "post deleted"}
 
@@ -161,4 +153,3 @@ async def delete_post(post_id: str, user: User = Depends(current_active_user),
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-

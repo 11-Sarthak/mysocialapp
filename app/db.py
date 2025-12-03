@@ -32,7 +32,8 @@ class Post(Base):
     user = relationship("User", back_populates="posts")
 
 # ----------------- Database URL -----------------
-DATABASE_URL = os.environ.get("DATABASE_URL")  # use env variable
+DATABASE_URL = DATABASE_URL = "postgresql+asyncpg://postgres:XnqUQzWQU4r6j0h4@db.yhfjmkugtijrcmphhtbg.supabase.co:5432/postgres"
+ # use env variable
 
 # SSL for Supabase
 ssl_context = ssl.create_default_context()
