@@ -10,10 +10,6 @@ from fastapi_users.db import SQLAlchemyBaseUserTableUUID, SQLAlchemyUserDatabase
 from fastapi import Depends
 from sqlalchemy.dialects.postgresql import UUID
 
-
-
-
-
 # Base class for models
 class Base(DeclarativeBase):
     pass
@@ -34,11 +30,18 @@ class Post(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     user = relationship("User", back_populates="posts")
 
-DATABASE_URL = "postgresql+asyncpg://postgres:XnqUQzWQU4r6j0h4@db.yhfjmkugtijrcmphhtbg.supabase.co:5432/postgres"
-# Create engine with SSL enabled
+# Load your DATABASE_URL from environment if possible
+DATABASE_URL = os.getenv(
+    "DATABASE_URL",
+    "postgresql+asyncpg://postgres:XnqUQzWQU4r6j0h4@db.yhfjmkugtijrcmphhtbg.supabase.co:5432/postgres"
+)
+
+# Create engine with proper SSL for Supabase
 engine = create_async_engine(
     DATABASE_URL,
-    connect_args={"ssl": True},  # <-- ensures SSL is used
+    connect_args={
+        "ssl": {"sslmode": "require"}  # <-- required for Supabase
+    },
 )
 
 async_session_maker = async_sessionmaker(engine, expire_on_commit=False)
