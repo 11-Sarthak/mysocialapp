@@ -13,10 +13,6 @@ from sqlalchemy.dialects.postgresql import UUID
 
 
 
- 
-load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), ".env"))
-DATABASE_URL = os.getenv("DATABASE_URL")
-print("DEBUG DATABASE_URL =", DATABASE_URL) 
 
 # Base class for models
 class Base(DeclarativeBase):
@@ -38,9 +34,13 @@ class Post(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     user = relationship("User", back_populates="posts")
 
-# Async engine and session maker
-engine = create_async_engine(DATABASE_URL,
-                            )
+DATABASE_URL = "postgresql+asyncpg://postgres:XnqUQzWQU4r6j0h4@db.yhfjmkugtijrcmphhtbg.supabase.co:5432/postgres"
+# Create engine with SSL enabled
+engine = create_async_engine(
+    DATABASE_URL,
+    connect_args={"ssl": True},  # <-- ensures SSL is used
+)
+
 async_session_maker = async_sessionmaker(engine, expire_on_commit=False)
 
 # Create all tables
